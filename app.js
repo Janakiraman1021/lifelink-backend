@@ -12,8 +12,6 @@ const profileRoutes = require("./routes/profile");
 const requestRoutes = require("./routes/requests");
 const scheduledDonationRoutes = require("./routes/scheduledDonation");
 
-
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -33,17 +31,19 @@ mongoose
   .then(() => console.log("Connected to MongoDB successfully!"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Socket.IO connection
+// Define Routes
+app.use("/api/donor", donorRoutes); // Updated with `/api` prefix
+app.use("/api/hospital", hospitalRoutes(io)); // Pass io for real-time functionality
+app.use("/api/organization", organizationRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/requests", requestRoutes);
+app.use("/api/scheduled-donations", scheduledDonationRoutes);
 
-// Define routes and pass io to hospital routes
-app.use("/donor", donorRoutes);
-app.use("/hospital", hospitalRoutes(io)); // Pass io for real-time functionality
-app.use("/organization", organizationRoutes);
-app.use("/profile", profileRoutes);
-app.use("/requests", requestRoutes);
-app.use("/scheduled-donations", scheduledDonationRoutes);
-
+// 404 Handler for non-existent routes
+app.use((req, res) => {
+  res.status(404).json({ error: "API endpoint not found" });
+});
 
 // Start Server
-const PORT = 5000;
+const PORT = 5000; // Or the port used by Render
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
