@@ -1,5 +1,5 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Organization = require("../models/organization");
 const Request = require("../models/request");
@@ -11,7 +11,7 @@ const router = express.Router();
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, organizationId } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
     const organization = new Organization({
       name,
       email,
@@ -32,7 +32,7 @@ router.post("/login", async (req, res) => {
     const organization = await Organization.findOne({ email });
     if (!organization) return res.status(404).json({ error: "Organization not found" });
 
-    const validPassword = await bcrypt.compare(password, organization.password);
+    const validPassword = await bcryptjs.compare(password, organization.password);
     if (!validPassword) return res.status(401).json({ error: "Invalid password" });
 
     const token = jwt.sign({ id: organization._id, role: "organization" }, "secretKey", { expiresIn: "1h" });

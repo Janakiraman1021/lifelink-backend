@@ -1,5 +1,5 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Hospital = require("../models/hospital");
 const Request = require("../models/request");
@@ -12,7 +12,7 @@ const hospitalRoutes = (io) => {
   router.post("/signup", async (req, res) => {
     try {
       const { name, email, password, hospitalId } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcryptjs.hash(password, 10);
       const hospital = new Hospital({ name, email, password: hashedPassword, hospitalId });
       await hospital.save();
       res.status(201).json({ message: "Hospital registered successfully" });
@@ -28,7 +28,7 @@ const hospitalRoutes = (io) => {
       const hospital = await Hospital.findOne({ email });
       if (!hospital) return res.status(404).json({ error: "Hospital not found" });
 
-      const validPassword = await bcrypt.compare(password, hospital.password);
+      const validPassword = await bcryptjs.compare(password, hospital.password);
       if (!validPassword) return res.status(401).json({ error: "Invalid password" });
 
       const token = jwt.sign({ id: hospital._id, role: "hospital" }, "secretKey", { expiresIn: "1h" });
